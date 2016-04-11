@@ -19,7 +19,8 @@
                 "bucket_name": "pgbackups",
                 "region": "eu-central-1",
                 "storage_type": "s3"
-            }
+            },
+            "stream_compression": true
         }
     },
     "http_address": "127.0.0.1",

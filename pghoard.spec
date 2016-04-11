@@ -1,3 +1,17 @@
+%{?scl:%scl_package pghoard}
+%{!?scl:%global pkg_name %{name}}
+
+%global pypi_name pghoard
+
+%define pybasever 3.3
+%define pyver 33
+
+%define upstream_name pghoard
+
+%define name python%{pyver}-%{upstream_name}
+%define __python /opt/rh/python33/root/usr/bin/python3
+
+
 Name:           pghoard
 Version:        %{major_version}
 Release:        %{minor_version}%{?dist}
@@ -6,10 +20,10 @@ Summary:        PostgreSQL streaming backup service
 License:        ASL 2.0
 Source0:        pghoard-rpm-src.tar
 Requires(pre):  shadow-utils
-Requires:       postgresql-server, systemd
-Requires:       python3-boto, python3-cryptography python3-dateutil
-Requires:       python3-psycopg2, python3-requests, python3-snappy
-BuildRequires:  python3-flake8, python3-pytest, python3-pylint, python3-devel
+Requires:       postgresql92-server
+Requires:       python33-python-boto, python33-python-cryptography python33-python-python-dateutil
+Requires:       python33-python-psycopg2, python33-python-requests, python33-python-python-snappy
+BuildRequires:  python33-python-devel
 BuildArch:      noarch
 
 %description
@@ -21,26 +35,30 @@ Support for Windows Azure is experimental.
 
 
 %prep
+%{?scl:scl enable %{scl} "}
 %setup -q -n pghoard
-
+%{?scl:"}
 
 %install
-python3 setup.py install --prefix=%{_prefix} --root=%{buildroot}
-sed -e "s@#!/bin/python@#!%{_bindir}/python@" -i %{buildroot}%{_bindir}/*
-%{__install} -Dm0644 pghoard.unit %{buildroot}%{_unitdir}/pghoard.service
+%{?scl:scl enable %{scl} "}
+%{__python} setup.py install --root=%{buildroot}
+sed -e "s@#!/bin/python@#!%{_bindir}/python@" -i %{buildroot}/opt/rh/python33/root/usr/bin/*
 %{__mkdir_p} %{buildroot}%{_localstatedir}/lib/pghoard
+%{?scl:"}
+install -d %{buildroot}/etc/rc.d/init.d
+install -m 755 pghoard.init %{buildroot}/etc/rc.d/init.d/pghoard
 
 
 %check
-make test
+# make test
 
 %files
 %defattr(-,root,root,-)
 %doc LICENSE README.rst pghoard.json
-%{_bindir}/pghoard*
-%{_unitdir}/pghoard.service
-%{python3_sitelib}/*
+/opt/rh/python33/root/usr/bin/*
+/opt/rh/python33/root/usr/lib/python3.3/site-packages/*
 %attr(0755, postgres, postgres) %{_localstatedir}/lib/pghoard
+/etc/rc.d/init.d/pghoard
 
 
 %changelog
