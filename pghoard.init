@@ -1,0 +1,63 @@
+#!/bin/bash
+#
+# pghoard    PGHoard (https://github.com/ohmu/pghoard/)
+#
+# chkconfig: 345 70 30
+# description: is a PostgreSQL backup daemon and restore tooling for cloud object storages.
+# processname: pghoard
+. /etc/init.d/functions
+source scl_source enable python33
+
+RETVAL=0
+prog="pghoard"
+LOCKFILE=/var/lock/subsys/pghoard
+PGHOARD_DIR=/var/lib/pghoard
+
+start() {
+        echo -n "Starting PGHoard: "
+        daemon --user postgres pghoard /var/lib/pghoard/pghoard.json
+        RETVAL=$?
+        [ $RETVAL -eq 0 ] && touch $LOCKFILE
+        echo
+        return $RETVAL
+}
+
+stop() {
+        echo -n "Shutting down PGHoard: "
+        killall pghoard && success || failure
+        RETVAL=$?
+        [ $RETVAL -eq 0 ] && rm -f $LOCKFILE
+        echo
+        return $RETVAL
+}
+
+reload() {
+        echo -n "Shutting down PGHoard: "
+        killall -sSIGHUP pghoard && success || failure
+        RETVAL=$?
+        [ $RETVAL -eq 0 ] && rm -f $LOCKFILE
+        echo
+        return $RETVAL
+}
+
+
+case "$1" in
+    start)
+        start
+        ;;
+    stop)
+        stop
+        ;;
+    reload)
+        reload
+        ;;
+    restart)
+        stop
+        start
+        ;;
+    *)
+        echo "Usage: PGHoard {start|stop|reload|restart}"
+        exit 1
+        ;;
+esac
+exit $RETVAL
